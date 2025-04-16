@@ -36,13 +36,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final measurement = await _askForMeasurement();
     if (measurement == null || measurement.trim().isEmpty) return;
 
+    final newSchedule = FeedingSchedule(
+      time: DateTime(date.year, date.month, date.day, time.hour, time.minute),
+      label: label.trim(),
+      measurement: measurement.trim(),
+    );
+
     setState(() {
-      nextFeeding = FeedingSchedule(
-        time: DateTime(date.year, date.month, date.day, time.hour, time.minute),
-        label: label.trim(),
-        measurement: measurement.trim(),
-      );
-      feedingRecords.add(nextFeeding!);
+      nextFeeding = newSchedule;
+      feedingRecords.add(newSchedule); // Save as a recorded feeding
     });
   }
 
@@ -123,16 +125,40 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             nextFeeding == null
                 ? const Text("No feeding scheduled yet")
-                : Text("Next feeding: ${nextFeeding!.time}"),
+                : Text(
+                  "Next feeding: ${nextFeeding!.time}",
+                  style: const TextStyle(fontSize: 16),
+                ),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _setFeedingSchedule,
               child: const Text("Schedule Feeding"),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "Recorded Feedings:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child:
+                  feedingRecords.isEmpty
+                      ? const Center(child: Text("No records yet."))
+                      : ListView.builder(
+                        itemCount: feedingRecords.length,
+                        itemBuilder: (context, index) {
+                          return FeedingScheduleCard(
+                            schedule: feedingRecords[index],
+                          );
+                        },
+                      ),
             ),
           ],
         ),
