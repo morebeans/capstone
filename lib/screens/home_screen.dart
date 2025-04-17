@@ -101,6 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
       time: DateTime(date.year, date.month, date.day, time.hour, time.minute),
       label: label.trim(),
       measurement: measurement.trim(),
+      breed: _selectedBreed!, // Pass the selected breed
     );
 
     setState(() {

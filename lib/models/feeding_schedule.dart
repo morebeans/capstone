@@ -4,30 +4,14 @@ class FeedingSchedule {
   final DateTime time;
   final String label;
   final String measurement;
+  final String breed; // Added breed property
 
   FeedingSchedule({
     required this.time,
     required this.label,
     required this.measurement,
+    required this.breed, // Added breed in constructor
   });
-
-  // Convert the FeedingSchedule to a map for easy storage (e.g., in a database or local storage)
-  Map<String, dynamic> toMap() {
-    return {
-      'time': time.toIso8601String(),
-      'label': label,
-      'measurement': measurement,
-    };
-  }
-
-  // Convert a map to a FeedingSchedule object
-  factory FeedingSchedule.fromMap(Map<String, dynamic> map) {
-    return FeedingSchedule(
-      time: DateTime.parse(map['time']),
-      label: map['label'],
-      measurement: map['measurement'],
-    );
-  }
 }
 
 class FeedingScheduleCard extends StatelessWidget {
@@ -37,37 +21,12 @@ class FeedingScheduleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final formattedTime =
-        "${schedule.time.hour}:${schedule.time.minute.toString().padLeft(2, '0')}";
-
     return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Feeding Time: $formattedTime",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Label: ${schedule.label}",
-              style: TextStyle(fontSize: 16, color: colorScheme.secondary),
-            ),
-            Text(
-              "Measurement: ${schedule.measurement}",
-              style: TextStyle(fontSize: 16, color: colorScheme.secondary),
-            ),
-          ],
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        title: Text(schedule.label),
+        subtitle: Text(
+          "${schedule.time}\nBreed: ${schedule.breed}\nMeasurement: ${schedule.measurement}",
         ),
       ),
     );
