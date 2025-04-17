@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'profile_edit_screen.dart';
 import '../models/feeding_schedule.dart';
 
@@ -13,7 +14,67 @@ class _HomeScreenState extends State<HomeScreen> {
   FeedingSchedule? nextFeeding;
   List<FeedingSchedule> feedingRecords = [];
 
+  String? _selectedBreed;
+  TextEditingController _searchController = TextEditingController();
+
+  final List<String> breeds = [
+    "Labrador Retriever",
+    "Golden Retriever",
+    "German Shepherd",
+    "Bulldog",
+    "Beagle",
+    "Poodle",
+    "Chihuahua",
+    "Shih Tzu",
+    "Pomeranian",
+    "Rottweiler",
+    "Siberian Husky",
+    "Dachshund",
+    "Great Dane",
+    "Doberman",
+    "Maltese",
+    "Persian Cat",
+    "Siamese Cat",
+    "Maine Coon",
+    "Bengal Cat",
+    "Ragdoll",
+  ];
+
+  List<String> filteredBreeds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    filteredBreeds = List.from(breeds);
+
+    _searchController.addListener(() {
+      setState(() {
+        filteredBreeds =
+            breeds
+                .where(
+                  (breed) => breed.toLowerCase().contains(
+                    _searchController.text.toLowerCase(),
+                  ),
+                )
+                .toList();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   void _setFeedingSchedule() async {
+    if (_selectedBreed == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a breed first")),
+      );
+      return;
+    }
+
     DateTime? date = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -44,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       nextFeeding = newSchedule;
-      feedingRecords.add(newSchedule); // Save as a recorded feeding
+      feedingRecords.add(newSchedule);
     });
   }
 
@@ -130,6 +191,42 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // 🔍 Search bar
+            TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: "Search Breed",
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // 🐶 Dropdown with filtered breeds
+            DropdownSearch<String>(
+              popupProps: const PopupProps.menu(
+                showSearchBox: false,
+                fit: FlexFit.loose,
+              ),
+              items: filteredBreeds,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: "Select Breed",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              onChanged: (value) => setState(() => _selectedBreed = value),
+              selectedItem: _selectedBreed,
+              validator:
+                  (value) =>
+                      value == null || value.isEmpty
+                          ? 'Please select a breed'
+                          : null,
+            ),
+            const SizedBox(height: 16),
+
             nextFeeding == null
                 ? const Text("No feeding scheduled yet")
                 : Text(
@@ -137,16 +234,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(fontSize: 16),
                 ),
             const SizedBox(height: 16),
+
             ElevatedButton(
               onPressed: _setFeedingSchedule,
               child: const Text("Schedule Feeding"),
             ),
             const SizedBox(height: 24),
+
             const Text(
               "Recorded Feedings:",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
+
             Expanded(
               child:
                   feedingRecords.isEmpty
